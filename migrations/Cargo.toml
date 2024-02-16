@@ -11,3 +11,4 @@ description = ""
 tokio = {workspace=true}
 tokio-postgres = {workspace=true}
 refinery = {workspace=true}
+dotenv = {workspace=true}
