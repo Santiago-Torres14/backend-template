@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  fin-track-postgres:
+    image: postgres:16.1
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - fin-track-postgres-data:/var/lib/postgresql/data
+    networks:
+      - fin-track-network
+
+volumes:
+  fin-track-postgres-data:
+    name: fin-track-postgres-data
+
+
+networks:
+  fin-track-network:
+    name: fin-track-network
+    driver: bridge
+

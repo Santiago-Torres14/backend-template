@@ -120,6 +120,7 @@ dependencies = [
  "axum",
  "bb8-postgres",
  "chrono",
+ "dotenv",
  "serde",
  "serde_json",
  "thiserror",
