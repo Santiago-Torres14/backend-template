@@ -25,7 +25,6 @@ async fn main() -> Result<(), BoxedError>{
 
     let pool = Pool::builder().build(pg_cm).await?;
 
-
     let app_state = AppState {
         pg_pool: pool
     };

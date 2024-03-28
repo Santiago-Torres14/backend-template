@@ -60,5 +60,7 @@ COPY --from=BUILD /testuser/target/$GLOBAL_TARGET/release/backend ./
 
 USER testuser:testuser
 
+EXPOSE 8080
+
 CMD ["/testuser/backend"]
 
