@@ -1,0 +1,64 @@
+ARG GLOBAL_ZIG_VER="zig-linux-aarch64-0.11.0"
+ARG GLOBAL_TARGET="x86_64-unknown-linux-musl"
+ARG GLOBAL_USER="testuser"
+
+FROM rust:1-bookworm as BUILD
+
+RUN update-ca-certificates
+
+RUN rustup target add x86_64-unknown-linux-musl \
+    && apt-get update -y \
+    && apt-get install -y musl-tools \
+    && apt-get clean
+
+ARG GLOBAL_ZIG_VER
+ARG GLOBAL_TARGET
+ARG GLOBAL_USER
+
+RUN adduser \
+    --disabled-password \
+    --home "/noexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    $GLOBAL_USER
+
+WORKDIR /ziglang
+
+
+RUN wget https://ziglang.org/download/0.11.0/$GLOBAL_ZIG_VER.tar.xz \
+    && tar -xvf $GLOBAL_ZIG_VER.tar.xz
+
+WORKDIR /usr/bin
+
+RUN ln -s /ziglang/${GLOBAL_ZIG_VER}/zig zig
+
+WORKDIR /testuser
+
+COPY . .
+
+RUN cargo install cargo-zigbuild
+
+RUN cargo zigbuild --target $GLOBAL_TARGET --release --package backend
+
+FROM gcr.io/distroless/cc AS RUNNER
+
+ARG GLOBAL_TARGET
+ARG DB_HOST=localhost
+ARG DB_USERNAME=postgres
+ARG DB_PASSWORD=postgres
+
+ENV DB_HOST=$DB_HOST
+ENV DB_USERNAME=$DB_USERNAME
+ENV DB_PASSWORD=$DB_PASSWORD
+
+COPY --from=BUILD /etc/passwd /etc/passwd
+COPY --from=BUILD /etc/group /etc/group
+
+WORKDIR /testuser
+
+COPY --from=BUILD /testuser/target/$GLOBAL_TARGET/release/backend ./
+
+USER testuser:testuser
+
+CMD ["/testuser/backend"]
+
